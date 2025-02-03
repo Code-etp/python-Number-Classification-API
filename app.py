@@ -1,4 +1,3 @@
-# app.py
 import os
 import flask
 from flask import Flask, request, jsonify
@@ -25,7 +24,7 @@ def get_number_fact(number):
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
     try:
-        number = request.args.get('number', type=int)
+        number = request.args.get('number', type=float)
         
         if number is None:
             return jsonify({
@@ -34,20 +33,23 @@ def classify_number():
                 "message": "Invalid number input"
             }), 400
 
+        # Convert to positive integer for mathematical properties
+        number_int = abs(int(number))
+
         properties = []
-        if is_armstrong_number(number):
+        if is_armstrong_number(number_int):
             properties.append("armstrong")
         
-        properties.append("odd" if number % 2 != 0 else "even")
+        properties.append("odd" if number_int % 2 != 0 else "even")
 
-        fun_fact = get_number_fact(number) or f"No interesting fact found for {number}"
+        fun_fact = get_number_fact(number_int) or f"No interesting fact found for {number_int}"
 
         return jsonify({
-            "number": number,
-            "is_prime": is_prime(number),
-            "is_perfect": is_perfect_number(number),
+            "number": number_int,
+            "is_prime": is_prime(number_int),
+            "is_perfect": is_perfect_number(number_int) if number_int != 0 else False,
             "properties": properties,
-            "digit_sum": digit_sum(number),
+            "digit_sum": digit_sum(number_int),
             "fun_fact": fun_fact
         }), 200
 
@@ -55,7 +57,7 @@ def classify_number():
         return jsonify({
             "number": request.args.get('number'),
             "error": True,
-            "message": "Input must be a valid integer"
+            "message": "Input must be a valid number"
         }), 400
 
 @app.errorhandler(400)
